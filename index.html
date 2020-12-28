@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .banner {
+            width: 600px;
+            height: 300px;
+            margin: 50px auto;
+            border: 1px solid #eee;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bannerlist {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30000px;
+            height: 100%;
+        }
+
+        .bannerlist li {
+            width: 600px;
+            height: 100%;
+            float: left;
+            line-height: 300px;
+            text-align: center;
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .circle {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .circle li {
+            width: 12px;
+            height: 12px;
+            float: left;
+            border-radius: 50%;
+            border: 1px solid red;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .circle li.current {
+            background: red;
+        }
+
+        .circle li:last-child {
+            margin-right: 0;
+        }
+
+        .left,
+        .right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 55px;
+            background: rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+        }
+        .left {
+            left: 0;
+        }
+        .right {
+            right: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="banner">
+        <ul class="bannerlist">
+            <li>5</li>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            <li>5</li>
+            <li>1</li>
+        </ul>
+        <ul class="circle">
+            <li class='current'></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+        <span class="left"></span>
+        <span class="right"></span>
+    </div>
+</body>
+<script>
+    // 获取相关元素dom
+    var banner = document.querySelector('.banner')
+    var bannerlist = document.querySelector('.bannerlist')
+    var circles = document.querySelectorAll('.circle li')
+    var left = document.querySelector('.left')
+    var right = document.querySelector('.right')
+
+    bannerlist.style.left = -600 + 'px'
+    // 定义总花费时间，每走一步花费时间
+    var timeAll = 600
+    var timeStep = 20
+    // 计算需要走的步数
+    var step = timeAll / timeStep
+    var ismove = false
+    var timeid = null
+    var autoTimeId = null
+    // 定义move方法
+    //      1.计算每步走的距离
+    //      2.获取最终要走完的距离
+    function move(flag) {
+        if (typeof flag === 'boolean') {
+            var dis = flag ? -600 : 600
+        } else {
+            var dis = flag - bannerlist.offsetLeft
+        }
+        if (ismove) return
+        ismove = true
+        setTimeout(() => {
+            ismove = false
+        }, 700);
+        var stepDis = dis / step
+        var lastDis = bannerlist.offsetLeft + dis
+        timeid = setInterval(() => {
+            var left = bannerlist.offsetLeft + stepDis
+            if (left === lastDis) {
+                clearInterval(timeid)
+                // 无缝
+                if (left === -3600) {
+                    left = -600
+                }
+                if (left === 0) {
+                    left = -3000
+                }
+            }
+            bannerlist.style.left = left + 'px'
+        }, timeStep);
+        // 圆点高亮
+        var index = Math.abs(lastDis / 600) - 1
+        if (index > 4) {
+            index = 0
+        }
+        if (index < 0) {
+            index = 4
+        }
+        for (var i = 0; i < circles.length; i++) {
+            circles[i].className = ''
+        }
+        circles[index].className = 'current'
+        startIndex = index + 1
+    }
+
+    // 绑定左右点击事件
+    right.onclick = function () {
+        move(true)
+    }
+    left.onclick = function () {
+        move(false)
+    }
+
+    // 圆点点击事件
+    for (var i = 0; i < circles.length; i++) {
+        circles[i].index = i
+        circles[i].onclick = function () {
+            move((this.index + 1) * (-600))
+            startIndex = this.index + 1
+        }
+
+    }
+    // 定义自动滚动起始index
+    var startIndex = 1
+    function automove() {
+        autoTimeId = setInterval(() => {
+            startIndex++
+            if (startIndex === 7) {
+                startIndex = 1
+            }
+            move(startIndex * (-600))
+        }, 2000)
+    }
+    automove()
+    // 鼠标移入移出事件
+    banner.onmouseenter = function () {
+        clearInterval(autoTimeId)
+    }
+    banner.onmouseleave = function () {
+        automove()
+    }
+</script>
+
+</html>
